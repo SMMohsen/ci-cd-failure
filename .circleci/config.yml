@@ -1,0 +1,46 @@
+version: 2.1
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
+jobs:
+  save-greeting-file:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: busybox
+    steps:
+      - checkout
+      - run:
+          name: "Save file"
+          command: "echo Hello, World! > /tmp/greeting.txt"
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - greeting.txt
+  print-greeting-file:
+    docker:
+      - image: busybox
+    steps:
+      - run:
+          name: "Print greeting"
+          command: "cat /tmp/greeting.txt"
+      - run:
+          name: "on fail"
+          command: echo failure happened
+          when: on_fail
+
+
+
+      
+
+    
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  sharing-workflow:
+    jobs:
+      - save-greeting-file
+      - print-greeting-file:
+          requires:
+            - save-greeting-file
